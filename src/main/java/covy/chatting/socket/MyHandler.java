@@ -44,7 +44,17 @@ public class MyHandler extends TextWebSocketHandler {
    */
   @Override
   protected void handleTextMessage(WebSocketSession session, TextMessage message) throws Exception {
-
+    //do something
+    final String sessionId = session.getId();
+    sessions.values().forEach((s) -> {
+      if (s.getId().equals(sessionId) && s.isOpen()) {
+        try {
+          s.sendMessage(message);
+        } catch (IOException e) {
+          throw new RuntimeException(e);
+        }
+      }
+    });
   }
 
   /**
