@@ -47,7 +47,7 @@ public class MyHandler extends TextWebSocketHandler {
     //do something
     final String sessionId = session.getId();
     sessions.values().forEach((s) -> {
-      if (s.getId().equals(sessionId) && s.isOpen()) {
+      if (!s.getId().equals(sessionId) && s.isOpen()) {
         try {
           s.sendMessage(message);
         } catch (IOException e) {
