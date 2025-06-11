@@ -66,7 +66,21 @@ public class MyHandler extends TextWebSocketHandler {
    */
   @Override
   public void afterConnectionClosed(WebSocketSession session, CloseStatus status) throws Exception {
+    final String sessionId = session.getId();
+    final String leaveMessage = sessionId + "님이 떠났습니다.";
+    sessions.remove(sessionId); // 삭제
 
+    //메시지 전송
+    sessions.values().forEach((s) -> {
+
+      if (!s.getId().equals(sessionId) && s.isOpen()) {
+        try {
+          s.sendMessage(new TextMessage(leaveMessage));
+        } catch (IOException e) {
+          throw new RuntimeException(e);
+        }
+      }
+    });
   }
 
   /**
