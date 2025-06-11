@@ -5,6 +5,7 @@ import java.util.HashMap;
 import java.util.Map;
 import org.springframework.web.socket.CloseStatus;
 import org.springframework.web.socket.TextMessage;
+import org.springframework.web.socket.WebSocketMessage;
 import org.springframework.web.socket.WebSocketSession;
 import org.springframework.web.socket.handler.TextWebSocketHandler;
 
@@ -24,14 +25,7 @@ public class MyHandler extends TextWebSocketHandler {
     final String enteredMessage = sessionId + "님이 입장하셨습니다.";
     sessions.put(sessionId, session);
 
-    sessions.values().forEach((s) -> {
-      try {
-        if(!s.getId().equals(sessionId) && s.isOpen()) {
-
-          s.sendMessage(new TextMessage(enteredMessage));
-        }
-      } catch (IOException e) {}
-    });
+    sendMessage(sessionId, new TextMessage(enteredMessage));
 
   }
 
@@ -46,15 +40,8 @@ public class MyHandler extends TextWebSocketHandler {
   protected void handleTextMessage(WebSocketSession session, TextMessage message) throws Exception {
     //do something
     final String sessionId = session.getId();
-    sessions.values().forEach((s) -> {
-      if (!s.getId().equals(sessionId) && s.isOpen()) {
-        try {
-          s.sendMessage(message);
-        } catch (IOException e) {
-          throw new RuntimeException(e);
-        }
-      }
-    });
+
+    sendMessage(sessionId, message);
   }
 
   /**
@@ -71,16 +58,7 @@ public class MyHandler extends TextWebSocketHandler {
     sessions.remove(sessionId); // 삭제
 
     //메시지 전송
-    sessions.values().forEach((s) -> {
-
-      if (!s.getId().equals(sessionId) && s.isOpen()) {
-        try {
-          s.sendMessage(new TextMessage(leaveMessage));
-        } catch (IOException e) {
-          throw new RuntimeException(e);
-        }
-      }
-    });
+    sendMessage(sessionId, new TextMessage(leaveMessage));
   }
 
   /**
@@ -91,7 +69,15 @@ public class MyHandler extends TextWebSocketHandler {
    * @throws Exception
    */
   @Override
-  public void handleTransportError(WebSocketSession session, Throwable exception) throws Exception {
+  public void handleTransportError(WebSocketSession session, Throwable exception) throws Exception {}
 
+  private void sendMessage(String sessionId, WebSocketMessage<?> message) {
+    sessions.values().forEach(s -> {
+      if(!s.getId().equals(sessionId) && s.isOpen()) {
+        try {
+          s.sendMessage(message);
+        } catch (IOException e) {}
+      }
+    });
   }
 }
